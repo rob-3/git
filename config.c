@@ -1333,6 +1333,7 @@ static const struct fsync_component_entry {
 	{ "commit-graph", FSYNC_COMPONENT_COMMIT_GRAPH },
 	{ "index", FSYNC_COMPONENT_INDEX },
 	{ "loose-ref", FSYNC_COMPONENT_LOOSE_REF },
+	{ "packed-refs", FSYNC_COMPONENT_PACKED_REFS },
 	{ "objects", FSYNC_COMPONENTS_OBJECTS },
 	{ "refs", FSYNC_COMPONENTS_REFS },
 	{ "derived-metadata", FSYNC_COMPONENTS_DERIVED_METADATA },

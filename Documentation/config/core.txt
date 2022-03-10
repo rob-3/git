@@ -565,9 +565,10 @@ core.fsync::
 * `commit-graph` hardens the commit graph file.
 * `index` hardens the index when it is modified.
 * `loose-ref` hardens references modified in the repo in loose-ref form.
+* `packed-refs` hardens references modified in the repo in packed-refs form.
 * `objects` is an aggregate option that is equivalent to
   `loose-object,pack`.
-* `refs` is an aggregate option that is equivalent to `loose-ref`.
+* `refs` is an aggregate option that is equivalent to `loose-ref,packed-refs`.
 * `derived-metadata` is an aggregate option that is equivalent to
   `pack-metadata,commit-graph`.
 * `default` is an aggregate option that is equivalent to
