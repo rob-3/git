@@ -1392,6 +1392,15 @@ static int refs_rename_ref_available(struct ref_store *refs,
 	return ok;
 }
 
+static int files_sync_loose_ref(struct ref_lock *lock, struct strbuf *err)
+{
+	int ret = fsync_component(FSYNC_COMPONENT_LOOSE_REF, get_lock_file_fd(&lock->lk));
+	if (ret)
+		strbuf_addf(err, "could not sync loose ref '%s': %s", lock->ref_name,
+			    strerror(errno));
+	return ret;
+}
+
 static int files_copy_or_rename_ref(struct ref_store *ref_store,
 			    const char *oldrefname, const char *newrefname,
 			    const char *logmsg, int copy)
@@ -1504,6 +1513,7 @@ static int files_copy_or_rename_ref(struct ref_store *ref_store,
 	oidcpy(&lock->old_oid, &orig_oid);
 
 	if (write_ref_to_lockfile(lock, &orig_oid, 0, &err) ||
+	    files_sync_loose_ref(lock, &err) ||
 	    commit_ref_update(refs, lock, &orig_oid, logmsg, &err)) {
 		error("unable to write current sha1 into %s: %s", newrefname, err.buf);
 		strbuf_release(&err);
@@ -1524,6 +1534,7 @@ static int files_copy_or_rename_ref(struct ref_store *ref_store,
 	flag = log_all_ref_updates;
 	log_all_ref_updates = LOG_REFS_NONE;
 	if (write_ref_to_lockfile(lock, &orig_oid, 0, &err) ||
+	    files_sync_loose_ref(lock, &err) ||
 	    commit_ref_update(refs, lock, &orig_oid, NULL, &err)) {
 		error("unable to write current sha1 into %s: %s", oldrefname, err.buf);
 		strbuf_release(&err);
@@ -2816,6 +2827,24 @@ static int files_transaction_prepare(struct ref_store *ref_store,
 				ret = TRANSACTION_GENERIC_ERROR;
 				goto cleanup;
 			}
+		}
+	}
+
+	/*
+	 * Sync all lockfiles to disk to ensure data consistency. We do this in
+	 * a separate step such that we can sync all modified refs in a single
+	 * step, which may be more efficient on some filesystems.
+	 */
+	for (i = 0; i < transaction->nr; i++) {
+		struct ref_update *update = transaction->updates[i];
+		struct ref_lock *lock = update->backend_data;
+
+		if (!(update->flags & REF_NEEDS_COMMIT))
+			continue;
+
+		if (files_sync_loose_ref(lock, err)) {
+			ret  = TRANSACTION_GENERIC_ERROR;
+			goto cleanup;
 		}
 	}
 
