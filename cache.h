@@ -1745,12 +1745,19 @@ int copy_file(const char *dst, const char *src, int mode);
 int copy_file_with_time(const char *dst, const char *src, int mode);
 
 void write_or_die(int fd, const void *buf, size_t count);
-void fsync_or_die(int fd, const char *);
+int maybe_fsync(int fd);
+
+static inline int fsync_component(enum fsync_component component, int fd)
+{
+	if (fsync_components & component)
+		return maybe_fsync(fd);
+	return 0;
+}
 
 static inline void fsync_component_or_die(enum fsync_component component, int fd, const char *msg)
 {
-	if (fsync_components & component)
-		fsync_or_die(fd, msg);
+	if (fsync_component(component, fd) < 0)
+		die_errno("fsync error on '%s'", msg);
 }
 
 ssize_t read_in_full(int fd, void *buf, size_t count);

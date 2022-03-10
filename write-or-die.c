@@ -56,19 +56,21 @@ void fprintf_or_die(FILE *f, const char *fmt, ...)
 	}
 }
 
-void fsync_or_die(int fd, const char *msg)
+int maybe_fsync(int fd)
 {
 	if (use_fsync < 0)
 		use_fsync = git_env_bool("GIT_TEST_FSYNC", 1);
 	if (!use_fsync)
-		return;
+		return 0;
 
 	if (fsync_method == FSYNC_METHOD_WRITEOUT_ONLY &&
 	    git_fsync(fd, FSYNC_WRITEOUT_ONLY) >= 0)
-		return;
+		return 0;
 
 	if (git_fsync(fd, FSYNC_HARDWARE_FLUSH) < 0)
-		die_errno("fsync error on '%s'", msg);
+		return -1;
+
+	return 0;
 }
 
 void write_or_die(int fd, const void *buf, size_t count)
