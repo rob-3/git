@@ -1271,6 +1271,10 @@ int cmd_bisect(int argc, const char **argv, const char *prefix)
 			die(_("'next' requires 0 arguments"));
 		get_terms(&terms);
 		res = bisect_next(&terms, prefix);
+	} else if (!strcmp("--abort", command)) {
+		if (argc)
+			die(_("'--abort' requires 0 arguments"));
+		res = bisect_reset(NULL);
 	} else if (!strcmp("reset", command)) {
 		if (argc > 1)
 			die(_("'reset' requires either no argument or a commit"));
