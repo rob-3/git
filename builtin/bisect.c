@@ -47,6 +47,7 @@ static const char * const builtin_bisect_usage[] = {
 	   "\tshow bisect log."),
 	N_("git bisect run <cmd>...\n"
 	   "\tuse <cmd>... to automatically bisect."),
+	"git bisect --abort",
 	NULL
 };
 
