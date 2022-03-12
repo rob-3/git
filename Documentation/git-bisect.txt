@@ -10,6 +10,7 @@ SYNOPSIS
 --------
 [verse]
 'git bisect' <subcommand> <options>
+'git bisect' (--abort)
 
 DESCRIPTION
 -----------
@@ -27,6 +28,7 @@ on the subcommand:
  git bisect replay <logfile>
  git bisect log
  git bisect run <cmd>...
+ git bisect --abort
  git bisect help
 
 This command uses a binary search algorithm to find which commit in
