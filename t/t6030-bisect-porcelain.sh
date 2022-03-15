@@ -1034,4 +1034,40 @@ test_expect_success 'testing' '
 	grep "git bisect good.*exited with error code" error
 '
 
+test_expect_success 'bisect --abort: back in the main branch' '
+	git checkout main &&
+	git bisect start &&
+	git bisect --abort &&
+	echo "main" > branch.expect &&
+	git branch --show-current > branch.output &&
+	cmp branch.expect branch.output
+'
+
+test_expect_success 'bisect --abort: back in another branch' '
+	git checkout -b abort-test &&
+	git bisect start &&
+	git bisect good $HASH1 &&
+	git bisect bad $HASH3 &&
+	git bisect --abort &&
+	echo "abort-test" > branch.expect &&
+	git branch --show-current > branch.output &&
+	cmp branch.expect branch.output
+'
+
+test_expect_success 'bisect --abort when not bisecting' '
+	git bisect --abort &&
+	git branch --show-current > branch.output &&
+	echo "abort-test" > branch.expect &&
+	cmp branch.expect branch.output
+'
+
+test_expect_success 'bisect --abort with argument should not work' '
+	git checkout main &&
+	git bisect start &&
+	test_must_fail git bisect --abort $HASH2 2>err &&
+	echo "main" > branch.expect &&
+	git branch --show-current > branch.output &&
+	cmp branch.expect branch.output
+'
+
 test_done
